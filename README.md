@@ -1,4 +1,4 @@
-# Computer
+<p align="center"><img src="docs/banner.png" alt="Computer" width="700"></p>
 
 A Firefox that stays signed in, in a small Linux VM on your Mac, that you and your agents can drive.
 

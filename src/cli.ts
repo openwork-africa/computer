@@ -4,6 +4,7 @@
 //
 //   computer screenshot shot.png        (bun computer … from the repo)
 //   computer --id computer-1234abcd click 512 300
+import { banner } from "./banner.ts";
 import { Computer } from "./sdk.ts";
 import { serve } from "./server.ts";
 
@@ -19,7 +20,11 @@ const print = (value: unknown) => console.log(typeof value === "string" ? value 
 const COMMANDS: Record<string, Command> = {
   serve: {
     usage: "serve                       open the page on http://127.0.0.1:41800 (PORT to change)",
-    run: () => new Promise(() => serve()),
+    run: () =>
+      new Promise(() => {
+        console.log(banner());
+        serve();
+      }),
   },
   list: {
     usage: "list                        computers and their state",
@@ -88,7 +93,7 @@ const COMMANDS: Record<string, Command> = {
 };
 
 const help = () =>
-  `computer [--id computer-xxxxxxxx] <command>\n\n${Object.values(COMMANDS).filter((c) => c.usage).map((c) => `  ${c.usage}`).join("\n")}`;
+  `${banner()}\ncomputer [--id computer-xxxxxxxx] <command>\n\n${Object.values(COMMANDS).filter((c) => c.usage).map((c) => `  ${c.usage}`).join("\n")}`;
 
 if (import.meta.main) {
   const args = process.argv.slice(2);
