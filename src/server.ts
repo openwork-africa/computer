@@ -64,7 +64,8 @@ const page = async (req: Request) => {
   return (await index.exists()) ? new Response(index) : new Response("Build the page first: bun run build", { status: 503 });
 };
 
-if (import.meta.main) {
+/** Serves the page and its API until the process ends. */
+export function serve() {
   const server = Bun.serve({
     hostname: config.host,
     port: config.port,
@@ -79,5 +80,8 @@ if (import.meta.main) {
     },
     fetch: (req) => (allowed(req) ? page(req) : json({ error: "Not allowed" }, 403)),
   });
-  console.log(`computer: ${server.url}`);
+  console.log(`Computer is open at ${server.url}`);
+  return server;
 }
+
+if (import.meta.main) serve();

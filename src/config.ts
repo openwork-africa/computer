@@ -1,10 +1,18 @@
+import { realpathSync } from "node:fs";
+import { dirname } from "node:path";
+
 // Settings, in one place. Everything a computer keeps on this Mac lives under COMPUTER_HOME.
 const home = process.env.COMPUTER_HOME ?? `${process.env.HOME}/.openwork-computer`;
 
+// Where image/ and web/dist/ are: the repo root when run from source, or next to the released binary (a compiled
+// binary's own files are virtual, under /$bunfs). The binary is usually reached through a link in ~/.local/bin.
+const compiled = import.meta.url.includes("$bunfs");
+const appDir = compiled ? `${dirname(realpathSync(process.execPath))}/` : new URL("../", import.meta.url).pathname;
+
 export const config = {
   image: "openwork-computer:1",
-  imageDir: new URL("../image/", import.meta.url).pathname,
-  webDir: new URL("../web/dist/", import.meta.url).pathname,
+  imageDir: `${appDir}image/`,
+  webDir: `${appDir}web/dist/`,
   host: "127.0.0.1",
   port: Number(process.env.PORT ?? 41800),
   // Each computer's screen is published on one port from this range, on 127.0.0.1 only.

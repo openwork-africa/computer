@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { assertId } from "../src/config.ts";
 import { keyName } from "../src/desktop.ts";
 
-test("maps E2B key names to xdotool's", () => {
+test("maps common key names to xdotool's", () => {
   expect(keyName("enter")).toBe("Return");
   expect(keyName("PageDown")).toBe("Next");
   expect(keyName("cmd")).toBe("ctrl");

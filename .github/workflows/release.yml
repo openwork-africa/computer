@@ -1,0 +1,31 @@
+# A tag like v0.2.0 builds the Mac app (one binary with the page and the VM image files) and publishes it, with
+# install.sh, as a GitHub release. install.sh then always fetches the latest one.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun test
+      - run: bun run release
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_type == 'tag' && github.ref_name || format('v0.0.0-{0}', github.run_number) }}
+        run: |
+          gh release create "$TAG" dist/computer-darwin-arm64.tar.gz install.sh \
+            --title "$TAG" --generate-notes \
+            $([ "${{ github.ref_type }}" = tag ] || echo --prerelease)

@@ -2,9 +2,10 @@
 // The command line: each action is a Command (its usage and what it does), so the help text and the dispatch come
 // from the same table.
 //
-//   bun computer screenshot shot.png
-//   bun computer --id computer-1234abcd click 512 300
+//   computer screenshot shot.png        (bun computer … from the repo)
+//   computer --id computer-1234abcd click 512 300
 import { Computer } from "./sdk.ts";
+import { serve } from "./server.ts";
 
 type Command = { usage: string; run: (args: string[], pc: () => Promise<Computer>) => Promise<unknown> };
 
@@ -16,6 +17,10 @@ const num = (args: string[], i: number): number => {
 const print = (value: unknown) => console.log(typeof value === "string" ? value : JSON.stringify(value, null, 2));
 
 const COMMANDS: Record<string, Command> = {
+  serve: {
+    usage: "serve                       open the page on http://127.0.0.1:41800 (PORT to change)",
+    run: () => new Promise(() => serve()),
+  },
   list: {
     usage: "list                        computers and their state",
     run: async () => (await Computer.list()).forEach((c) => console.log(`${c.id}  ${c.state.padEnd(8)}  ${c.label}`)),
@@ -83,7 +88,7 @@ const COMMANDS: Record<string, Command> = {
 };
 
 const help = () =>
-  `bun computer [--id computer-xxxxxxxx] <command>\n\n${Object.values(COMMANDS).filter((c) => c.usage).map((c) => `  ${c.usage}`).join("\n")}`;
+  `computer [--id computer-xxxxxxxx] <command>\n\n${Object.values(COMMANDS).filter((c) => c.usage).map((c) => `  ${c.usage}`).join("\n")}`;
 
 if (import.meta.main) {
   const args = process.argv.slice(2);

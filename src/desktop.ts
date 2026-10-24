@@ -1,5 +1,5 @@
-// What can be done on a running computer's screen, with the method names of E2B's Desktop SDK: screenshot, leftClick,
-// write, press, scroll… Each is one xdotool, ImageMagick or xclip command run inside the computer.
+// What can be done on a running computer's screen: screenshot, leftClick, write, press, scroll… Each is one xdotool,
+// ImageMagick or xclip command run inside the computer.
 import { config } from "./config.ts";
 import type { ContainerRuntime } from "./runtime.ts";
 
@@ -8,7 +8,7 @@ const decoder = new TextDecoder();
 export type Tab = { index: number; id: number; active: boolean; title: string; url: string };
 export type ScrollDirection = "up" | "down" | "left" | "right";
 
-// E2B's key names, and a few more, as xdotool's. Cmd means Ctrl: the computer is Linux.
+// Common key names (enter, esc, pagedown…) as xdotool's. Cmd means Ctrl: the computer is Linux.
 const KEYS: Record<string, string> = {
   enter: "Return", return: "Return", esc: "Escape", escape: "Escape", tab: "Tab", space: "space",
   backspace: "BackSpace", delete: "Delete", del: "Delete", insert: "Insert",

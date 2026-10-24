@@ -1,4 +1,4 @@
-// The SDK: one Computer object per computer, with E2B Desktop's method names for the screen (from Desktop) and
+// The SDK: one Computer object per computer, with the screen's methods (from Desktop) and
 // create/connect/list/save/resume/kill/record for the rest. It works without the server running.
 //
 //   import { Computer } from "@openwork/computer";
