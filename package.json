@@ -1,0 +1,26 @@
+{
+  "name": "@openwork/computer",
+  "version": "0.1.0",
+  "description": "A Firefox that stays signed in, in a small Linux VM on your Mac, that you and your agents can drive.",
+  "license": "MIT",
+  "type": "module",
+  "module": "src/sdk.ts",
+  "exports": { ".": "./src/sdk.ts" },
+  "bin": { "computer": "src/cli.ts" },
+  "repository": { "type": "git", "url": "https://github.com/openwork-africa/computer" },
+  "os": ["darwin"],
+  "cpu": ["arm64"],
+  "scripts": {
+    "start": "bun run build && bun src/server.ts",
+    "dev": "bun --watch src/server.ts & cd web && bun run dev",
+    "build": "cd web && bun install && bun run build",
+    "image": "container build -t openwork-computer:1 -f image/Containerfile image",
+    "computer": "bun src/cli.ts",
+    "typecheck": "tsc --noEmit && cd web && tsc -b",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "typescript": "~6.0.3"
+  }
+}

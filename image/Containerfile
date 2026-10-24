@@ -1,0 +1,45 @@
+# A computer: a small Debian desktop (Xvfb, openbox, Firefox) streamed over noVNC, run on a Mac with Apple's
+# `container`. Built on first use by src/runtime.ts, or by hand from the repo root:
+#
+#     bun run image
+FROM debian:trixie-slim
+
+ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8
+
+# The desktop, the stream (x11vnc -> websockify -> noVNC on 6080), the clipboard tools paste/copy use
+# (xdotool, xclip) and imagemagick, so a screenshot can be taken from inside without the stream.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates curl gpg xvfb openbox x11vnc novnc websockify xdotool xclip imagemagick \
+      fonts-dejavu-core fonts-noto-color-emoji dbus-x11 pwgen \
+    && rm -rf /var/lib/apt/lists/*
+
+# Firefox from Mozilla's own apt repository (it ships arm64), not Debian's ESR: the current release, updated by
+# Mozilla. Pinned so Debian's firefox-esr never replaces it.
+RUN install -d -m 0755 /etc/apt/keyrings \
+    && curl -fsSL https://packages.mozilla.org/apt/repo-signing-key.gpg -o /etc/apt/keyrings/packages.mozilla.org.asc \
+    && echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" \
+       > /etc/apt/sources.list.d/mozilla.list \
+    && printf 'Package: *\nPin: origin packages.mozilla.org\nPin-Priority: 1000\n' > /etc/apt/preferences.d/mozilla \
+    && apt-get update && apt-get install -y --no-install-recommends firefox \
+    && rm -rf /var/lib/apt/lists/*
+
+# Firefox runs as a plain user, never root. Its profile is a folder mounted from the Mac at /profile.
+RUN useradd -m -u 1000 -s /bin/bash user && install -d -o user -g user -m 0700 /profile
+
+COPY policies.json /etc/firefox/policies/policies.json
+COPY rc.xml /etc/xdg/openbox/rc.xml
+COPY start.sh /usr/local/bin/start-computer
+RUN chmod 0755 /usr/local/bin/start-computer && chmod 0644 /etc/firefox/policies/policies.json /etc/xdg/openbox/rc.xml
+
+# Record: an add-on notes each step in Firefox and sends it to computer-recorder, which keeps it with a screenshot.
+# The add-on is not signed by Mozilla, so Firefox's autoconfig (openwork.cfg) loads it as a temporary add-on.
+COPY recorder.py /usr/local/bin/computer-recorder
+COPY addon/ /usr/lib/openwork-recorder/
+COPY autoconfig.js /usr/lib/firefox/defaults/pref/autoconfig.js
+COPY openwork.cfg /usr/lib/firefox/openwork.cfg
+RUN chmod 0755 /usr/local/bin/computer-recorder \
+    && chmod -R a+rX,go-w /usr/lib/openwork-recorder \
+    && chmod 0644 /usr/lib/firefox/defaults/pref/autoconfig.js /usr/lib/firefox/openwork.cfg
+
+EXPOSE 6080
+ENTRYPOINT ["/usr/local/bin/start-computer"]

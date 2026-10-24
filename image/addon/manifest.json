@@ -1,0 +1,10 @@
+{
+  "manifest_version": 2,
+  "name": "Openwork recorder",
+  "version": "1.0",
+  "description": "Notes each step done in this computer (clicks, typing, keys, scrolls, pages) for Record, and lists the open tabs for the SDK.",
+  "browser_specific_settings": { "gecko": { "id": "recorder@openwork.local" } },
+  "permissions": ["webNavigation", "tabs", "http://127.0.0.1/*"],
+  "background": { "scripts": ["background.js"] },
+  "content_scripts": [{ "matches": ["<all_urls>"], "js": ["content.js"], "run_at": "document_start", "all_frames": true }]
+}
