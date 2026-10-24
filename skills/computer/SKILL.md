@@ -39,6 +39,7 @@ with a `container` error, run `container system start` and try again.
    | `computer scroll down 3` | Wheel clicks where the mouse is (`up` too) |
    | `computer tabs` / `computer tab NAME` | List tabs (* = in front); bring one forward by title, address or index |
    | `computer clipboard` | Read the computer's clipboard (after `key ctrl+c`) |
+   | `computer logs` | The sites' console errors, when a page misbehaves (a button stays grey, a sign-in goes nowhere) |
 
 3. Pages take a moment: wait 2–3 seconds after opening or clicking a link, then screenshot again. If the page
    still loads, wait and look again. Repeat.

@@ -165,6 +165,12 @@ export class Desktop {
     return this.press("ctrl+w");
   }
 
+  /** The last lines of Firefox's log: the sites' console errors and warnings, and Firefox's own. Read it when a site
+   * misbehaves (a button that stays disabled, a sign-in that goes nowhere). */
+  async logs(lines = 50): Promise<string> {
+    return this.read("tail", "-n", String(lines), "/var/log/firefox.log").catch(() => "");
+  }
+
   wait(ms: number) {
     return sleep(ms);
   }

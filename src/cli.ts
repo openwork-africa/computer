@@ -72,6 +72,10 @@ const COMMANDS: Record<string, Command> = {
   },
   newtab: { usage: "newtab [URL] | closetab", run: async (a, pc) => (await pc()).newTab(a[0]) },
   closetab: { usage: "", run: async (_, pc) => (await pc()).closeTab() },
+  logs: {
+    usage: "logs [N]                    the last N lines of the sites' console errors (50)",
+    run: async (a, pc) => print(await (await pc()).logs(a[0] ? num(a, 0) : 50)),
+  },
   clipboard: {
     usage: "clipboard [TEXT]            read the computer's clipboard, or set it",
     run: async (a, pc) => (a.length ? (await pc()).setClipboard(a.join(" ")) : print(await (await pc()).getClipboard())),

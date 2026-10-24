@@ -71,6 +71,7 @@ computer open https://example.com      # go to an address (--new-tab for a new t
 computer tabs                          # open tabs; * marks the one in front
 computer tab mail                      # bring a tab forward by part of its title or address
 computer title                         # the page's title, as text (also: computer url)
+computer logs                          # the sites' console errors, when a page misbehaves
 computer help                          # every command
 ```
 
@@ -143,6 +144,7 @@ page itself can call its API, so other websites cannot. Each VM sees only its ow
 | Port 41800 in use | `PORT=41900 computer serve` |
 | "No computer is running" | Start one in the page or with `computer create`; resume a saved one from the ⓘ list or with `computer --id <id> resume` |
 | The screen is black or frozen | Reload the page; the computer keeps running |
+| A site's button stays grey, or sign-in goes nowhere | `computer logs` shows the site's errors. Reloading the site's tab often clears a failed check |
 | Signed out after Save | That site's sign-in did not ask to be remembered. Tick "stay signed in" or "remember me" when signing in |
 
 **Remove everything:** delete your computers in the page, then `rm -rf ~/.openwork-computer ~/.local/bin/computer`.
