@@ -11,6 +11,7 @@
   "bin": {
     "computer": "src/cli.ts"
   },
+  "homepage": "https://worklyn.com/computer",
   "repository": {
     "type": "git",
     "url": "https://github.com/openwork-africa/computer"

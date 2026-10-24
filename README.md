@@ -1,6 +1,7 @@
 <p align="center"><img src="docs/banner.png" alt="Computer" width="700"></p>
 
 A Firefox that stays signed in, in a small Linux VM on your Mac, that you and your agents can drive.
+**[worklyn.com/computer](https://worklyn.com/computer)**
 
 ![The Computer page: Firefox running in a VM on this Mac, with Paste, Copy, Record and Save](docs/hero.jpg)
 
