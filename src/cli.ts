@@ -76,6 +76,10 @@ const COMMANDS: Record<string, Command> = {
     usage: "logs [N]                    the last N lines of the sites' console errors (50)",
     run: async (a, pc) => print(await (await pc()).logs(a[0] ? num(a, 0) : 50)),
   },
+  upload: {
+    usage: "upload FILE [NAME]          put a file in the computer's ~/Uploads; prints its path there",
+    run: async (a, pc) => print(await (await pc()).upload(a[0] ?? "", a[1])),
+  },
   clipboard: {
     usage: "clipboard [TEXT]            read the computer's clipboard, or set it",
     run: async (a, pc) => (a.length ? (await pc()).setClipboard(a.join(" ")) : print(await (await pc()).getClipboard())),

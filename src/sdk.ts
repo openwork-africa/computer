@@ -8,8 +8,10 @@
 //   await pc.write("hello");
 //   await pc.press("enter");
 //   await Bun.write("shot.png", await pc.screenshot());
+//   const file = await pc.upload("~/Pictures/beach.jpg");  // then pick `file` in the site's upload dialog
+import { basename } from "node:path";
 import { type ComputerInfo, ComputerService } from "./computers.ts";
-import { assertId } from "./config.ts";
+import { assertId, config } from "./config.ts";
 import { Desktop } from "./desktop.ts";
 import { RecordingService } from "./recordings.ts";
 import { ContainerRuntime } from "./runtime.ts";
@@ -20,6 +22,13 @@ export const services = (() => {
   const runtime = new ContainerRuntime();
   return { runtime, computers: new ComputerService(runtime, new ComputerStore()), recordings: new RecordingService(runtime) };
 })();
+
+/** A file on this Mac, by path (~ allowed), that must exist. */
+const fileOnMac = async (path: string) => {
+  const file = Bun.file(path.replace(/^~(?=\/)/, process.env.HOME ?? "~"));
+  if (!(await file.exists())) throw new Error(`No file at ${path}`);
+  return file;
+};
 
 export class Computer extends Desktop {
   private constructor(id: string) {
@@ -55,6 +64,24 @@ export class Computer extends Desktop {
   /** Deletes the VM; its profile folder is kept. */
   kill() {
     return services.computers.remove(this.id);
+  }
+
+  /**
+   * Copies a file into the uploads folder every computer shares, and returns where it is inside the computer
+   * (/home/user/Uploads/NAME), for a site's upload dialog: click the site's upload button, press ctrl+l, write that
+   * path, press enter. `file` is a path on this Mac (~ allowed) or the bytes themselves, with `name`.
+   */
+  async upload(file: string | Blob | Uint8Array, name?: string): Promise<string> {
+    const source = typeof file === "string" ? await fileOnMac(file) : file;
+    const base = basename(name ?? (typeof file === "string" ? file : ""));
+    if (!base || base.startsWith(".")) throw new Error("Give the upload a file name");
+    await Bun.write(`${config.paths.uploads}/${base}`, source, { createPath: true });
+    const inside = `${config.uploadsInside}/${base}`;
+    // A computer started before the shared folder existed does not have it until it is saved and resumed.
+    await this.runtime.exec(this.id, ["runuser", "-u", "user", "--", "test", "-r", inside]).catch(() => {
+      throw new Error(`${this.id} cannot see its Uploads folder yet: save and resume it, then upload again`);
+    });
+    return inside;
   }
 
   readonly record = {

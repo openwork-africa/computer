@@ -54,7 +54,8 @@ export class ContainerRuntime {
   run({ id, port, profile }: VmSpec): Promise<Uint8Array> {
     return this.cli([
       "run", "-d", "--init", "--name", assertId(id), "-m", config.memory, "-c", String(config.cpus), "--shm-size", "512M",
-      "-p", `${config.host}:${port}:6080`, "-v", `${profile}:/profile`, "-l", "app=openwork-computer", config.image,
+      "-p", `${config.host}:${port}:6080`, "-v", `${profile}:/profile`, "-v", `${config.paths.uploads}:${config.uploadsInside}`,
+      "-l", "app=openwork-computer", config.image,
     ]);
   }
 

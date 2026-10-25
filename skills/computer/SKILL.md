@@ -40,11 +40,24 @@ with a `container` error, run `container system start` and try again.
    | `computer tabs` / `computer tab NAME` | List tabs (* = in front); bring one forward by title, address or index |
    | `computer clipboard` | Read the computer's clipboard (after `key ctrl+c`) |
    | `computer logs` | The sites' console errors, when a page misbehaves (a button stays grey, a sign-in goes nowhere) |
+   | `computer upload FILE` | Put a file from this Mac into the computer's `~/Uploads`; prints its path there |
 
 3. Pages take a moment: wait 2–3 seconds after opening or clicking a link, then screenshot again. If the page
    still loads, wait and look again. Repeat.
 
 `computer help` lists every command.
+
+## Uploading a file to a site
+
+A site's upload button can only see files inside the computer. To attach a picture, video or document:
+
+1. `computer upload ~/Pictures/beach.jpg` prints where it is inside: `/home/user/Uploads/beach.jpg`.
+2. Click the site's upload button (or "Browse…"). A file dialog opens.
+3. `computer key ctrl+l`, `computer type /home/user/Uploads/beach.jpg`, `computer key enter`.
+4. Screenshot to check the site shows the file attached.
+
+If `upload` says the computer cannot see its Uploads folder, it was started before this existed: ask the person
+before you `save` and `resume` it.
 
 ## Rules
 

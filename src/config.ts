@@ -25,7 +25,11 @@ export const config = {
     list: `${home}/computers.json`,
     profiles: `${home}/profiles`,
     recordings: `${home}/recordings`,
+    // One folder shared by every computer: files put here show up inside as ~/Uploads, for a site's upload button.
+    uploads: `${home}/uploads`,
   },
+  /** Where the uploads folder is inside a computer (Firefox runs as `user`). */
+  uploadsInside: "/home/user/Uploads",
 } as const;
 
 /** Computers are named computer-<8 hex>. Only names of that shape ever reach `container`, so nothing here can touch

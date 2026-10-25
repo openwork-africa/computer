@@ -4,7 +4,7 @@
 import { chmod, mkdir } from "node:fs/promises";
 import { createServer } from "node:net";
 import { assertId, config } from "./config.ts";
-import type { ContainerRuntime } from "./runtime.ts";
+import type { ContainerRuntime, VmSpec } from "./runtime.ts";
 import type { ComputerRecord, ComputerStore } from "./store.ts";
 
 export type ComputerState = "running" | "stopped" | "gone";
@@ -38,7 +38,7 @@ export class ComputerService {
     const profile = `${config.paths.profiles}/${id}`;
     await mkdir(profile, { recursive: true, mode: 0o700 });
     await chmod(profile, 0o700);
-    await this.runtime.run({ id, port, profile });
+    await this.boot({ id, port, profile });
     try {
       const stream = await this.stream(id, port);
       await this.store.put({ id, label: label.trim() || "Firefox", port, profile, createdAt: new Date().toISOString(), savedAt: null });
@@ -65,9 +65,15 @@ export class ComputerService {
     if (!running) {
       if (!(await portFree(record.port))) throw new Error(`Port ${record.port} is in use by something else; free it to resume ${id}`);
       await this.runtime.remove(id).catch(() => {});
-      await this.runtime.run(record);
+      await this.boot(record);
     }
     return { id, stream: await this.stream(id, record.port) };
+  }
+
+  /** Starts the VM, with the shared uploads folder there to be mounted. */
+  private async boot(spec: VmSpec) {
+    await mkdir(config.paths.uploads, { recursive: true, mode: 0o700 });
+    await this.runtime.run(spec);
   }
 
   /** Deletes the VM. Its profile folder is kept: delete it by hand to forget the sign-ins. */

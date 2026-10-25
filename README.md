@@ -72,6 +72,7 @@ computer tabs                          # open tabs; * marks the one in front
 computer tab mail                      # bring a tab forward by part of its title or address
 computer title                         # the page's title, as text (also: computer url)
 computer logs                          # the sites' console errors, when a page misbehaves
+computer upload ~/Pictures/beach.jpg   # into the computer's ~/Uploads, for a site's upload button
 computer help                          # every command
 ```
 
@@ -90,6 +91,7 @@ await pc.write("hello");
 await pc.press("enter");
 await Bun.write("screen.png", await pc.screenshot());
 await pc.switchTab("mail");
+const file = await pc.upload("~/Pictures/beach.jpg"); // "/home/user/Uploads/beach.jpg", for the upload dialog
 await pc.save();                          // shut down, keeping sign-ins and tabs
 ```
 
@@ -101,6 +103,7 @@ await pc.save();                          // shut down, keeping sign-ins and tab
 | Keyboard | `write(text)`, `press("ctrl+l")`, `press(["ctrl", "shift", "t"])` |
 | Browser | `open(url, { newTab })`, `getUrl()`, `tabs()`, `switchTab(n \| text)`, `newTab`, `nextTab`, `prevTab`, `closeTab` |
 | Clipboard | `getClipboard()`, `setClipboard(text)`, `copy()` |
+| Files | `upload(path \| bytes, name?)`: into the shared uploads folder; returns the path inside the computer |
 | Recording | `record.start()`, `record.note(text)`, `record.finish(name)`, `record.status()`, `record.discard()` |
 
 ## Recordings
@@ -130,11 +133,12 @@ Everything is in `~/.openwork-computer/`, which only your Mac user can read. Set
 |---|---|
 | `profiles/<id>/` | Each computer's Firefox profile. **It holds live sign-ins: treat it like a password.** |
 | `recordings/` | Your recordings |
+| `uploads/` | Files for sites' upload buttons. Every computer sees this folder as `~/Uploads` |
 | `computers.json` | The list of computers |
 | `app/` | The installed app |
 
 **Security.** The page and every screen listen on 127.0.0.1 only, and each boot sets a new screen password. Only the
-page itself can call its API, so other websites cannot. Each VM sees only its own profile folder.
+page itself can call its API, so other websites cannot. Each VM sees only its own profile folder, and the shared `uploads/`.
 
 ## When something is off
 
