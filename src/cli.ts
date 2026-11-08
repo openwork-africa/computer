@@ -34,6 +34,8 @@ const COMMANDS: Record<string, Command> = {
   save: { usage: "save | resume | kill        shut down keeping sign-ins, boot again, delete", run: async (_, pc) => print(await (await pc()).save()) },
   resume: { usage: "", run: async (_, pc) => print(await (await pc()).resume()) },
   kill: { usage: "", run: async (_, pc) => (await pc()).kill() },
+  health: { usage: "health                     show whether browser commands can run", run: async (_, pc) => print((await pc()).health()) },
+  probe: { usage: "probe                      test and re-open a stalled exec channel", run: async (_, pc) => (await pc()).probe() },
 
   screenshot: {
     usage: "screenshot [FILE.png]       save the screen",

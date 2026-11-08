@@ -43,7 +43,7 @@ export class Desktop {
 
   /** The screen as a PNG. */
   screenshot(): Promise<Uint8Array> {
-    return this.run("import", "-window", "root", "png:-");
+    return this.runtime.exec(this.id, ["import", "-window", "root", "png:-"], { timeoutMs: 15_000 });
   }
   getScreenSize() {
     return Promise.resolve({ ...config.screen });
@@ -168,7 +168,7 @@ export class Desktop {
   /** The last lines of Firefox's log: the sites' console errors and warnings, and Firefox's own. Read it when a site
    * misbehaves (a button that stays disabled, a sign-in that goes nowhere). */
   async logs(lines = 50): Promise<string> {
-    return this.read("tail", "-n", String(lines), "/var/log/firefox.log").catch(() => "");
+    return decoder.decode(await this.runtime.exec(this.id, ["tail", "-n", String(lines), "/var/log/firefox.log"], { timeoutMs: 8_000 }).catch(() => new Uint8Array())).trim();
   }
 
   wait(ms: number) {

@@ -9,12 +9,13 @@
 //   await pc.press("enter");
 //   await Bun.write("shot.png", await pc.screenshot());
 //   const file = await pc.upload("~/Pictures/beach.jpg");  // then pick `file` in the site's upload dialog
+import { chmod, copyFile, mkdir, rename, rm } from "node:fs/promises";
 import { basename } from "node:path";
 import { type ComputerInfo, ComputerService } from "./computers.ts";
 import { assertId, config } from "./config.ts";
 import { Desktop } from "./desktop.ts";
 import { RecordingService } from "./recordings.ts";
-import { ContainerRuntime } from "./runtime.ts";
+import { type ComputerHealth, ContainerRuntime } from "./runtime.ts";
 import { ComputerStore } from "./store.ts";
 
 /** The parts, made once and shared by the SDK, the command line and the server. */
@@ -25,9 +26,10 @@ export const services = (() => {
 
 /** A file on this Mac, by path (~ allowed), that must exist. */
 const fileOnMac = async (path: string) => {
-  const file = Bun.file(path.replace(/^~(?=\/)/, process.env.HOME ?? "~"));
+  const expanded = path.replace(/^~(?=\/)/, process.env.HOME ?? "~");
+  const file = Bun.file(expanded);
   if (!(await file.exists())) throw new Error(`No file at ${path}`);
-  return file;
+  return expanded;
 };
 
 export class Computer extends Desktop {
@@ -65,23 +67,41 @@ export class Computer extends Desktop {
   kill() {
     return services.computers.remove(this.id);
   }
+  /** Whether browser commands can be sent, or the exec circuit is protecting this computer from retries. */
+  health(): ComputerHealth {
+    return services.runtime.health(this.id);
+  }
+  /** A short, explicit probe that is allowed while the exec circuit is open. */
+  async probe(): Promise<void> {
+    await services.runtime.probe(this.id);
+  }
 
   /**
    * Copies a file into the uploads folder every computer shares, and returns where it is inside the computer
-   * (/home/user/Uploads/NAME), for a site's upload dialog: click the site's upload button, press ctrl+l, write that
-   * path, press enter. `file` is a path on this Mac (~ allowed) or the bytes themselves, with `name`.
+   * (/home/user/Uploads/NAME). The transfer is handled directly on the mounted host folder, with no `container exec`,
+   * native picker automation, or second copy through the VM. `file` is a path on this Mac (~ allowed), a Blob, or
+   * bytes, with `name` for non-path sources.
    */
   async upload(file: string | Blob | Uint8Array, name?: string): Promise<string> {
     const source = typeof file === "string" ? await fileOnMac(file) : file;
     const base = basename(name ?? (typeof file === "string" ? file : ""));
     if (!base || base.startsWith(".")) throw new Error("Give the upload a file name");
-    await Bun.write(`${config.paths.uploads}/${base}`, source, { createPath: true });
-    const inside = `${config.uploadsInside}/${base}`;
-    // A computer started before the shared folder existed does not have it until it is saved and resumed.
-    await this.runtime.exec(this.id, ["runuser", "-u", "user", "--", "test", "-r", inside]).catch(() => {
-      throw new Error(`${this.id} cannot see its Uploads folder yet: save and resume it, then upload again`);
-    });
-    return inside;
+    const staged = `${config.paths.uploads}/${base}`;
+    await mkdir(config.paths.uploads, { recursive: true, mode: 0o755 });
+    await chmod(config.paths.uploads, 0o755);
+    if (typeof source === "string") {
+      await copyFile(source, staged);
+    } else {
+      const partial = `${staged}.${crypto.randomUUID()}.part`;
+      try {
+        await Bun.write(partial, source, { createPath: true });
+        await rename(partial, staged);
+      } finally {
+        await rm(partial, { force: true }).catch(() => {});
+      }
+    }
+    await chmod(staged, 0o644);
+    return `${config.uploadsInside}/${base}`;
   }
 
   readonly record = {

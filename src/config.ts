@@ -17,7 +17,7 @@ export const config = {
   port: Number(process.env.PORT ?? 41800),
   // Each computer's screen is published on one port from this range, on 127.0.0.1 only.
   ports: { from: 41810, to: 41899 },
-  memory: "2G",
+  memory: "4G",
   cpus: 2,
   screen: { width: 1024, height: 640 },
   paths: {

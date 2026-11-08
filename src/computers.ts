@@ -72,7 +72,9 @@ export class ComputerService {
 
   /** Starts the VM, with the shared uploads folder there to be mounted. */
   private async boot(spec: VmSpec) {
-    await mkdir(config.paths.uploads, { recursive: true, mode: 0o700 });
+    // Firefox runs as `user` inside the VM, so the shared host folder must be traversable and its files readable.
+    await mkdir(config.paths.uploads, { recursive: true, mode: 0o755 });
+    await chmod(config.paths.uploads, 0o755);
     await this.runtime.run(spec);
   }
 
@@ -88,9 +90,18 @@ export class ComputerService {
     const until = Date.now() + 40_000;
     let password = "";
     while (Date.now() < until) {
-      password ||= new TextDecoder().decode(await this.runtime.exec(id, ["cat", "/run/computer/vncpass"]).catch(() => new Uint8Array())).trim();
+      if (!password) {
+        try {
+          password = new TextDecoder().decode(await this.runtime.exec(id, ["cat", "/run/computer/vncpass"])).trim();
+        } catch (error) {
+          if (this.runtime.health(id) === "unhealthy") throw error;
+        }
+      }
       const served = await fetch(`http://${config.host}:${port}/vnc.html`).then((r) => (r.body?.cancel(), r.ok), () => false);
-      const shown = await this.runtime.exec(id, ["xdotool", "search", "--onlyvisible", "--class", "firefox"]).then(() => true, () => false);
+      const shown = await this.runtime.exec(id, ["xdotool", "search", "--onlyvisible", "--class", "firefox"]).then(() => true, (error) => {
+        if (this.runtime.health(id) === "unhealthy") throw error;
+        return false;
+      });
       if (password && served && shown) return { ws: `ws://${config.host}:${port}/websockify`, password };
       await sleep(500);
     }
