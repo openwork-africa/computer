@@ -11,6 +11,7 @@ ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates curl gpg xvfb openbox x11vnc novnc websockify xdotool xclip imagemagick \
       fonts-dejavu-core fonts-noto-color-emoji dbus-x11 pwgen \
+      libavcodec-extra61 \
     && rm -rf /var/lib/apt/lists/*
 
 # Firefox from Mozilla's own apt repository (it ships arm64), not Debian's ESR: the current release, updated by
